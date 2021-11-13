@@ -5,7 +5,10 @@ from lux.game import Game
 
 
 path = '/kaggle_simulations/agent' if os.path.exists('/kaggle_simulations') else '.'
-model = torch.jit.load(f'{path}/model.pth')
+try:
+    model = torch.jit.load(f'{path}/model.pth')
+except:
+    model = torch.jit.load('imitation_learning/model.pth')
 model.eval()
 
 
