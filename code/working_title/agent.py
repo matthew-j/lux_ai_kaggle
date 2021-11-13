@@ -4,6 +4,10 @@ import pickle
 
 import builtins as __builtin__
 
+
+import sys
+sys.path.insert(0, os.path.join(os.getcwd(), 'working_title')) # want to use ./working_title/lux/game.py for Game and Missions imports
+
 from lux.game import Game, Missions
 
 from make_actions import make_city_actions, make_unit_missions, make_unit_actions
@@ -50,13 +54,15 @@ def agent(observation, configuration, DEBUG=False):
         # actually rebuilt and recomputed from scratch
         game_state._update(observation["updates"])
 
+
+
     if not os.environ.get('GFOOTBALL_DATA_DIR', ''):  # on Kaggle compete, do not save items
         str_step = str(observation["step"]).zfill(3)
-        with open('snapshots/observation-{}-{}.pkl'.format(str_step, game_state.player_id), 'wb') as handle:
+        with open('working_title/snapshots/observation-{}-{}.pkl'.format(str_step, game_state.player_id), 'wb') as handle:
             pickle.dump(observation, handle, protocol=pickle.HIGHEST_PROTOCOL)
-        with open('snapshots/game_state-{}-{}.pkl'.format(str_step, game_state.player_id), 'wb') as handle:
+        with open('working_title/snapshots/game_state-{}-{}.pkl'.format(str_step, game_state.player_id), 'wb') as handle:
             pickle.dump(game_state, handle, protocol=pickle.HIGHEST_PROTOCOL)
-        with open('snapshots/missions-{}-{}.pkl'.format(str_step, game_state.player_id), 'wb') as handle:
+        with open('working_title/snapshots/missions-{}-{}.pkl'.format(str_step, game_state.player_id), 'wb') as handle:
             pickle.dump(missions, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
     game_state.compute_start_time = time.time()
