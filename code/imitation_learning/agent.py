@@ -1,7 +1,7 @@
 import os
 import numpy as np
 import torch
-from lux.game import Game
+from lux_imit.game import Game
 
 
 path = '/kaggle_simulations/agent' if os.path.exists('/kaggle_simulations') else '.'

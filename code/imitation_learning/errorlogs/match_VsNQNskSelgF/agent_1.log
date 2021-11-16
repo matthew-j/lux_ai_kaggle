@@ -1,0 +1,12 @@
+=== Agent Install Log ===
+=== Agent Compile Log ===
+=== Agent Error Log ===
+Traceback (most recent call last):
+  File "main.py", line 32, in <module>
+    actions = agent(observation, None)
+  File "C:\Users\brand\Documents\School\Grad_School\Year6\lux_ai_kaggle\code\imitation_learning\agent.py", line 126, in agent
+    game_state = get_game_state(observation)    
+  File "C:\Users\brand\Documents\School\Grad_School\Year6\lux_ai_kaggle\code\imitation_learning\agent.py", line 94, in get_game_state
+    game_state.id = observation["player"]
+KeyError: 'player'
+Agent timed out
