@@ -5,13 +5,13 @@ import numpy as np
 import builtins as __builtin__
 
 from typing import List
-from lux import game
+from lux_wt import game
 
-from lux.game import Game, Unit
-from lux.game_map import Cell, RESOURCE_TYPES
-from lux.constants import Constants
-from lux.game_position import Position
-from lux.game_constants import GAME_CONSTANTS
+from lux_wt.game import Game, Unit
+from lux_wt.game_map import Cell, RESOURCE_TYPES
+from lux_wt.constants import Constants
+from lux_wt.game_position import Position
+from lux_wt.game_constants import GAME_CONSTANTS
 
 
 def find_best_cluster(game_state: Game, unit: Unit, distance_multiplier = -0.5, DEBUG=False):

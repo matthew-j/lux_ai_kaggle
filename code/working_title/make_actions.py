@@ -3,11 +3,11 @@
 import builtins as __builtin__
 from typing import Tuple, List
 
-from lux.game import Game, Mission, Missions
-from lux.game_objects import CityTile, Unit
-from lux.game_position import Position
-from lux.constants import Constants
-from lux.game_constants import GAME_CONSTANTS
+from lux_wt.game import Game, Mission, Missions
+from lux_wt.game_objects import CityTile, Unit
+from lux_wt.game_position import Position
+from lux_wt.constants import Constants
+from lux_wt.game_constants import GAME_CONSTANTS
 
 from heuristics import find_best_cluster
 

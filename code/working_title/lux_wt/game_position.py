@@ -1,4 +1,4 @@
-from lux import game
+from lux_wt import game
 import random
 from typing import List, Set, Tuple
 

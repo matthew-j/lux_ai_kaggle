@@ -4,8 +4,8 @@ from typing import List
 
 import builtins as __builtin__
 
-from lux.game import Game, Mission, Missions, Player, Unit
-import lux.annotate as annotate
+from lux_wt.game import Game, Mission, Missions, Player, Unit
+import lux_wt.annotate as annotate
 
 
 def annotate_game_state(game_state: Game, DEBUG=False):

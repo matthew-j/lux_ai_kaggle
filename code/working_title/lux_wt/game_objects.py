@@ -1,4 +1,4 @@
-from lux import annotate
+from lux_wt import annotate
 import random
 from typing import Dict, List
 
