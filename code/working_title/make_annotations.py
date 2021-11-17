@@ -3,9 +3,12 @@ from itertools import chain
 from typing import List
 
 import builtins as __builtin__
-
-from lux_wt.game import Game, Mission, Missions, Player, Unit
-import lux_wt.annotate as annotate
+try:
+    from lux_wt.game import Game, Mission, Missions, Player, Unit
+    import lux_wt.annotate as annotate
+except:
+    from working_title.lux_wt.game import Game, Mission, Missions, Player, Unit
+    import working_title.lux_wt.annotate as annotate
 
 
 def annotate_game_state(game_state: Game, DEBUG=False):

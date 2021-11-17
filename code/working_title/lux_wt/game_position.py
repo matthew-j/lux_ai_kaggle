@@ -1,4 +1,7 @@
-from lux_wt import game
+try:
+    from lux_wt import game
+except:
+    from working_title.lux_wt import game
 import random
 from typing import List, Set, Tuple
 

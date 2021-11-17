@@ -3,13 +3,23 @@
 import builtins as __builtin__
 from typing import Tuple, List
 
-from lux_wt.game import Game, Mission, Missions
-from lux_wt.game_objects import CityTile, Unit
-from lux_wt.game_position import Position
-from lux_wt.constants import Constants
-from lux_wt.game_constants import GAME_CONSTANTS
+try:
+    from lux_wt.game import Game, Mission, Missions
+    from lux_wt.game_objects import CityTile, Unit
+    from lux_wt.game_position import Position
+    from lux_wt.constants import Constants
+    from lux_wt.game_constants import GAME_CONSTANTS
 
-from heuristics import find_best_cluster
+    from heuristics import find_best_cluster
+except:
+    from working_title.lux_wt.game import Game, Mission, Missions
+    from working_title.lux_wt.game_objects import CityTile, Unit
+    from working_title.lux_wt.game_position import Position
+    from working_title.lux_wt.constants import Constants
+    from working_title.lux_wt.game_constants import GAME_CONSTANTS
+
+    from working_title.heuristics import find_best_cluster
+
 
 DIRECTIONS = Constants.DIRECTIONS
 

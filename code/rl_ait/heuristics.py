@@ -7,13 +7,22 @@ import numpy as np
 import builtins as __builtin__
 
 from typing import List
-from lux_ait import game
+try:
+    from lux_ait import game
 
-from lux_ait.game import Game, Player
-from lux_ait.game_map import Cell, RESOURCE_TYPES, Position
-from lux_ait.constants import Constants
-from lux_ait.game_constants import GAME_CONSTANTS
-from lux_ait import annotate
+    from lux_ait.game import Game, Player
+    from lux_ait.game_map import Cell, RESOURCE_TYPES, Position
+    from lux_ait.constants import Constants
+    from lux_ait.game_constants import GAME_CONSTANTS
+    from lux_ait import annotate
+except:
+    from rl_ait.lux_ait import game
+    from rl_ait.lux_ait.game import Game
+    from rl_ait.lux_ait.game_map import Cell, RESOURCE_TYPES, Position
+    from rl_ait.lux_ait.game_objects import Unit
+    from rl_ait.lux_ait.constants import Constants
+    from rl_ait.lux_ait.game_constants import GAME_CONSTANTS
+    from rl_ait.lux_ait import annotate
 
 
 def find_best_cluster(game_state: Game, position: Position, distance_multiplier = -0.1, DEBUG=False):

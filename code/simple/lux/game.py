@@ -1,6 +1,11 @@
-from .constants import Constants
-from .game_map import GameMap
-from .game_objects import Player, Unit, City, CityTile
+try:
+    from .constants import Constants
+    from .game_map import GameMap
+    from .game_objects import Player, Unit, City, CityTile
+except:
+    from simple.constants import Constants
+    from simple.game_map import GameMap
+    from simple.game_objects import Player, Unit, City, CityTile
 
 INPUT_CONSTANTS = Constants.INPUT_CONSTANTS
 

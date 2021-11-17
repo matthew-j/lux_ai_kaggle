@@ -1,8 +1,10 @@
 import os
 import numpy as np
 import torch
-from lux_imit.game import Game
-
+try:
+    from lux_imit.game import Game
+except:
+    from imitation_learning.lux_imit.game import Game
 
 path = '/kaggle_simulations/agent' if os.path.exists('/kaggle_simulations') else '.'
 try:
@@ -40,7 +42,7 @@ def make_input(obs, unit_id):
                 # Units
                 team = int(strs[2])
                 cooldown = float(strs[6])
-                idx = 2 + (team - obs['player']) % 2 * 3
+                idx = 2 + (team - obs.player) % 2 * 3
                 b[idx:idx + 3, x, y] = (
                     1,
                     cooldown / 6,
@@ -52,7 +54,7 @@ def make_input(obs, unit_id):
             city_id = strs[2]
             x = int(strs[3]) + x_shift
             y = int(strs[4]) + y_shift
-            idx = 8 + (team - obs['player']) % 2 * 2
+            idx = 8 + (team - obs.player) % 2 * 2
             b[idx:idx + 2, x, y] = (
                 1,
                 cities[city_id]
@@ -68,7 +70,7 @@ def make_input(obs, unit_id):
             # Research Points
             team = int(strs[1])
             rp = int(strs[2])
-            b[15 + (team - obs['player']) % 2, :] = min(rp, 200) / 200
+            b[15 + (team - obs.player) % 2, :] = min(rp, 200) / 200
         elif input_identifier == 'c':
             # Cities
             city_id = strs[2]
@@ -94,7 +96,7 @@ def get_game_state(observation):
         game_state = Game()
         game_state._initialize(observation["updates"])
         game_state._update(observation["updates"][2:])
-        game_state.id = observation["player"]
+        game_state.id = observation.player
     else:
         game_state._update(observation["updates"])
     return game_state
@@ -128,6 +130,7 @@ def agent(observation, configuration):
     
     game_state = get_game_state(observation)    
     player = game_state.players[observation.player]
+    observation["width"], observation["height"] = game_state.map.width, game_state.map.height
     actions = []
     
     # City Actions

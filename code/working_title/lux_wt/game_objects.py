@@ -1,4 +1,7 @@
-from lux_wt import annotate
+try:
+    from lux_wt import annotate
+except:
+    from working_title.lux_wt import annotate
 import random
 from typing import Dict, List
 

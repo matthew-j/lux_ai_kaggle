@@ -1,9 +1,18 @@
 import math, sys
-from lux.game import Game
-from lux.game_map import Cell, RESOURCE_TYPES
-from lux.constants import Constants
-from lux.game_constants import GAME_CONSTANTS
-from lux import annotate
+
+try:
+    from lux.game import Game
+    from lux.game_map import Cell, RESOURCE_TYPES
+    from lux.constants import Constants
+    from lux.game_constants import GAME_CONSTANTS
+    from lux import annotate
+except:
+    from simple.lux.game import Game
+    from simple.lux.game_map import Cell, RESOURCE_TYPES
+    from simple.lux.constants import Constants
+    from simple.lux.game_constants import GAME_CONSTANTS
+    from simple.lux import annotate
+
 
 DIRECTIONS = Constants.DIRECTIONS
 game_state = None

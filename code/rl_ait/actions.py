@@ -5,13 +5,22 @@ import os, random, collections
 import builtins as __builtin__
 from typing import Tuple, Dict, Set, DefaultDict
 
-from lux import game
+try:
+    from lux_ait import game
 
-from lux.game import Game, Player
-from lux.game_map import Cell, RESOURCE_TYPES, Position
-from lux.game_objects import City, CityTile, Unit
-from lux.constants import Constants
-from lux.game_constants import GAME_CONSTANTS
+    from lux_ait.game import Game, Player
+    from lux_ait.game_map import Cell, RESOURCE_TYPES, Position
+    from lux_ait.game_objects import City, CityTile, Unit
+    from lux_ait.constants import Constants
+    from lux_ait.game_constants import GAME_CONSTANTS
+except:
+    from rl_ait.lux_ait import game
+    from rl_ait.lux_ait.game import Game
+    from rl_ait.lux_ait.game_map import Cell, RESOURCE_TYPES, Position
+    from rl_ait.lux_ait.game_objects import Unit
+    from rl_ait.lux_ait.constants import Constants
+    from rl_ait.lux_ait.game_constants import GAME_CONSTANTS
+    from rl_ait.lux_ait import annotate
 
 from heuristics import *
 

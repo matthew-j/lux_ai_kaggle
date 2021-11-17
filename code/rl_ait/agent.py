@@ -1,26 +1,26 @@
 import os
-from lux_ait.game import Game
-from lux_ait.game_map import Cell, RESOURCE_TYPES, Position
-from lux_ait.game_objects import Unit
-from lux_ait.constants import Constants
-from lux_ait.game_constants import GAME_CONSTANTS
-from lux_ait import annotate
+try:
+    from lux_ait.game import Game
+    from lux_ait.game_map import Cell, RESOURCE_TYPES, Position
+    from lux_ait.game_objects import Unit
+    from lux_ait.constants import Constants
+    from lux_ait.game_constants import GAME_CONSTANTS
+    from lux_ait import annotate
+except:
+    from rl_ait.lux_ait.game import Game
+    from rl_ait.lux_ait.game_map import Cell, RESOURCE_TYPES, Position
+    from rl_ait.lux_ait.game_objects import Unit
+    from rl_ait.lux_ait.constants import Constants
+    from rl_ait.lux_ait.game_constants import GAME_CONSTANTS
+    from rl_ait.lux_ait import annotate
 import math, sys
 import numpy as np
 import random
-from lux_ait.game import Game
-from lux_ait.game_map import Cell, RESOURCE_TYPES
-from lux_ait.constants import Constants
-from lux_ait.game_constants import GAME_CONSTANTS
-from lux_ait import annotate
-import math
-import numpy as np
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
 from collections import deque
-import random
-import math
+
 
 from pathlib import Path
 p = Path('/kaggle_simulations/agent/')

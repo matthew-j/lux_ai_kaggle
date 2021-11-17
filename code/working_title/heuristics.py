@@ -5,14 +5,20 @@ import numpy as np
 import builtins as __builtin__
 
 from typing import List
-from lux_wt import game
-
-from lux_wt.game import Game, Unit
-from lux_wt.game_map import Cell, RESOURCE_TYPES
-from lux_wt.constants import Constants
-from lux_wt.game_position import Position
-from lux_wt.game_constants import GAME_CONSTANTS
-
+try:
+    from lux_wt import game
+    from lux_wt.game import Game, Unit
+    from lux_wt.game_map import Cell, RESOURCE_TYPES
+    from lux_wt.constants import Constants
+    from lux_wt.game_position import Position
+    from lux_wt.game_constants import GAME_CONSTANTS
+except:
+    from working_title.lux_wt import game
+    from working_title.lux_wt.game import Game, Unit
+    from working_title.lux_wt.game_map import Cell, RESOURCE_TYPES
+    from working_title.lux_wt.constants import Constants
+    from working_title.lux_wt.game_position import Position
+    from working_title.lux_wt.game_constants import GAME_CONSTANTS
 
 def find_best_cluster(game_state: Game, unit: Unit, distance_multiplier = -0.5, DEBUG=False):
     if DEBUG: print = __builtin__.print

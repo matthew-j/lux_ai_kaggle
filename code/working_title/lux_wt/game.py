@@ -5,11 +5,19 @@ from typing import DefaultDict, Dict, List, Tuple, Set
 
 import numpy as np
 
-from .constants import Constants
-from .game_map import GameMap, RESOURCE_TYPES
-from .game_objects import Player, Unit, City
-from .game_position import Position
-from .game_constants import GAME_CONSTANTS
+try:
+    from .constants import Constants
+    from .game_map import GameMap, RESOURCE_TYPES
+    from .game_objects import Player, Unit, City
+    from .game_position import Position
+    from .game_constants import GAME_CONSTANTS
+except:
+    from working_title.constants import Constants
+    from working_title.game_map import GameMap, RESOURCE_TYPES
+    from working_title.game_objects import Player, Unit, City
+    from working_title.game_position import Position
+    from working_title.game_constants import GAME_CONSTANTS
+
 
 INPUT_CONSTANTS = Constants.INPUT_CONSTANTS
 
