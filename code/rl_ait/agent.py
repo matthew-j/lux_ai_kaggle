@@ -1,26 +1,25 @@
-import os
-try:
-    from lux_ait.game import Game
-    from lux_ait.game_map import Cell, RESOURCE_TYPES, Position
-    from lux_ait.game_objects import Unit
-    from lux_ait.constants import Constants
-    from lux_ait.game_constants import GAME_CONSTANTS
-    from lux_ait import annotate
-except:
-    from rl_ait.lux_ait.game import Game
-    from rl_ait.lux_ait.game_map import Cell, RESOURCE_TYPES, Position
-    from rl_ait.lux_ait.game_objects import Unit
-    from rl_ait.lux_ait.constants import Constants
-    from rl_ait.lux_ait.game_constants import GAME_CONSTANTS
-    from rl_ait.lux_ait import annotate
+from lux_ait.game import Game
+from lux_ait.game_map import Cell, RESOURCE_TYPES, Position
+from lux_ait.game_objects import Unit
+from lux_ait.constants import Constants
+from lux_ait.game_constants import GAME_CONSTANTS
+from lux_ait import annotate
 import math, sys
 import numpy as np
 import random
+from lux_ait.game import Game
+from lux_ait.game_map import Cell, RESOURCE_TYPES
+from lux_ait.constants import Constants
+from lux_ait.game_constants import GAME_CONSTANTS
+from lux_ait import annotate
+import math
+import numpy as np
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
 from collections import deque
-
+import random
+import math
 
 from pathlib import Path
 p = Path('/kaggle_simulations/agent/')
@@ -80,7 +79,7 @@ def get_inputs(game_state):
 
 def get_model(s):
     input_shape = (s,s,17)
-    inputs = keras.Input(shape= input_shape,name = 'the_game_map')
+    inputs = keras.Input(shape= input_shape,name = 'The game map')
     f = layers.Flatten()(inputs)   
     h,w,_ = get_inputs(game_state).shape
     print(h,w)
@@ -131,19 +130,13 @@ def agent(observation, configuration):
         print("Creating model..")
         model =get_model(game_state.map.width)
         print("Load model weight..")
-
-        weight_path = str(p/('model_%d.h5'%game_state.map.width))
-        if 'rl_ait' in os.listdir():
-            weight_path = os.path.join('rl_ait', weight_path)
-
         try:
-            model.load_weights(weight_path,  by_name=True, skip_mismatch=True)
+            model.load_weights( str(p/'model%d.h5'%game_state.map.width),  by_name=True, skip_mismatch=True)
         except Exception as e:
             print('Error in model load')
             print(e)
-            print(weight_path)
 #         model = tf.keras.models.load_model('model.h5')
-        print("Done creating model")
+        print("Done crating mdoel")
         
         
     else:

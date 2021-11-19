@@ -22,7 +22,7 @@ except:
     from rl_ait.lux_ait.game_constants import GAME_CONSTANTS
     from rl_ait.lux_ait import annotate
 
-from heuristics import *
+from rl_heuristics import *
 
 import numpy as np
 DIRECTIONS = Constants.DIRECTIONS

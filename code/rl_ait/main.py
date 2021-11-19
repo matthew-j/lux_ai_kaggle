@@ -1,8 +1,9 @@
+# %%writefile main.py
 from typing import Dict
 import sys
 from agent import agent
 if __name__ == "__main__":
-    
+
     def read_input():
         """
         Reads input from stdin
@@ -24,7 +25,7 @@ if __name__ == "__main__":
     while True:
         inputs = read_input()
         observation["updates"].append(inputs)
-        
+
         if step == 0:
             player_id = int(observation["updates"][0])
             observation.player = player_id
