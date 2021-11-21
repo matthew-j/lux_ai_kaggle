@@ -1,7 +1,7 @@
 from typing import Dict
 import sys
-# from agent import agent
-from imitation_learning.agent import agent
+from agent import agent
+
 if __name__ == "__main__":
     
     def read_input():
@@ -25,7 +25,10 @@ if __name__ == "__main__":
     while True:
         inputs = read_input()
         observation["updates"].append(inputs)
-        
+        with open('input_log.txt', 'a') as f:
+            f.write(inputs + '\n')
+
+
         if step == 0:
             player_id = int(observation["updates"][0])
             observation.player = player_id
