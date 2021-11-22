@@ -5,7 +5,7 @@ from rl_agent.luxai2021.game.constants import Constants
 
 
 class Reward():
-    def __init__(self, game, team) -> None:
+    def __init__(self, game, team, max_reward) -> None:
         super().__init__()
         
         self.stats = None
@@ -13,6 +13,7 @@ class Reward():
 
         self.game = game
         self.team = team
+        self.max_reward = max_reward
     def game_start(self):
         """
         This funciton is called at the start of each game. Use this to
@@ -161,5 +162,6 @@ class Reward():
                 stats_string.append("%s=%.2f" % (key, value))
             print(",".join(stats_string))
 
-
-        return reward
+        assert reward <= self.max_reward
+        scaled_reward = reward/self.max_reward
+        return scaled_reward
