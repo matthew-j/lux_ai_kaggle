@@ -125,12 +125,16 @@ def get_action(policy, unit, dest):
     return unit.move('c'), unit.pos
 
 
-def agent(observation, configuration):
+def agent(observation, configuration, calc_actions=True):
     global game_state
     
     game_state = get_game_state(observation)    
     player = game_state.players[observation.player]
     observation["width"], observation["height"] = game_state.map.width, game_state.map.height
+    
+    if not calc_actions:
+        return(None)
+    
     actions = []
     
     # City Actions
