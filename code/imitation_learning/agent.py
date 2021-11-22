@@ -6,7 +6,7 @@ try:
 except:
     from imitation_learning.lux_imit.game import Game
 
-path = '/kaggle_simulations/agent' if os.path.exists('/kaggle_simulations') else '.'
+path = '/kaggle_simulations/agent/imitation_learning' if os.path.exists('/kaggle_simulations') else '.'
 try:
     model = torch.jit.load(f'{path}/model.pth')
 except:
