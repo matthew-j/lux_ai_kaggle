@@ -20,27 +20,35 @@ game_state = Game()
 missions = Missions()
 
 
-def game_logic(game_state: Game, missions: Missions, DEBUG=False):
+def game_logic(game_state: Game, missions: Missions, calc_actions, annotations=True, DEBUG=False):
     if DEBUG: print = __builtin__.print
     else: print = lambda *args: None
 
-    game_state.calculate_features(missions)
-    state_annotations = annotate_game_state(game_state)
-    actions_by_cities = make_city_actions(game_state, missions, DEBUG=DEBUG)
-    missions = make_unit_missions(game_state, missions, DEBUG=DEBUG)
-    mission_annotations = annotate_missions(game_state, missions)
-    missions, actions_by_units = make_unit_actions(game_state, missions, DEBUG=DEBUG)
-    movement_annotations = annotate_movements(game_state, actions_by_units)
+    game_state.calculate_features(missions) # updates game state
+    if not calc_actions:
+        return(None, game_state, missions)
+    else:
+        actions_by_cities = make_city_actions(game_state, missions, DEBUG=DEBUG)
+        missions = make_unit_missions(game_state, missions, DEBUG=DEBUG)
+        missions, actions_by_units = make_unit_actions(game_state, missions, DEBUG=DEBUG)
 
-    print("actions_by_cities", actions_by_cities)
-    print("actions_by_units", actions_by_units)
-    print("mission_annotations", mission_annotations)
-    print("movement_annotations", movement_annotations)
-    actions = actions_by_cities + actions_by_units + mission_annotations + movement_annotations + state_annotations
-    return actions, game_state, missions
+        print("actions_by_cities", actions_by_cities)
+        print("actions_by_units", actions_by_units)
+
+        actions = actions_by_cities + actions_by_units
+
+        if annotations:
+            state_annotations = annotate_game_state(game_state)
+            mission_annotations = annotate_missions(game_state, missions)
+            movement_annotations = annotate_movements(game_state, actions_by_units)
+            print("mission_annotations", mission_annotations)
+            print("movement_annotations", movement_annotations)
+
+            actions += mission_annotations + movement_annotations + state_annotations
+        return actions, game_state, missions
 
 
-def agent(observation, configuration, DEBUG=False):
+def agent(observation, configuration, DEBUG=False, calc_actions=True):
     if DEBUG: print = __builtin__.print
     else: print = lambda *args: None
 
@@ -67,5 +75,5 @@ def agent(observation, configuration, DEBUG=False):
     #         pickle.dump(missions, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
     game_state.compute_start_time = time.time()
-    actions, game_state, missions = game_logic(game_state, missions)
+    actions, game_state, missions = game_logic(game_state, missions, calc_actions, annotations=False)
     return actions

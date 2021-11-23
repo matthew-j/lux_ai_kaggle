@@ -6,7 +6,7 @@ try:
 except:
     from imitation_learning.lux_imit.game import Game
 
-path = '/kaggle_simulations/agent' if os.path.exists('/kaggle_simulations') else '.'
+path = '/kaggle_simulations/agent/imitation_learning' if os.path.exists('/kaggle_simulations') else '.'
 try:
     model = torch.jit.load(f'{path}/model.pth')
 except:
@@ -125,12 +125,16 @@ def get_action(policy, unit, dest):
     return unit.move('c'), unit.pos
 
 
-def agent(observation, configuration):
+def agent(observation, configuration, calc_actions=True):
     global game_state
     
     game_state = get_game_state(observation)    
     player = game_state.players[observation.player]
     observation["width"], observation["height"] = game_state.map.width, game_state.map.height
+    
+    if not calc_actions:
+        return(None)
+    
     actions = []
     
     # City Actions
