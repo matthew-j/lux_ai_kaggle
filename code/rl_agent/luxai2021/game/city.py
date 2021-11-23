@@ -1,9 +1,12 @@
 """
 Implements /src/Game/city.ts
 """
-
-from .actionable import Actionable
-from .actions import *
+try:
+    from .actionable import Actionable
+    from .actions import *
+except:
+    from rl_agent.luxai2021.game.actionable import Actionable
+    from rl_agent.luxai2021.game.actions import *
 
 """
 //**

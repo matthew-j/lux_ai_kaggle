@@ -164,7 +164,10 @@ class AgentFromStdInOut(Agent):
 
         # Print the messages to the kaggle controller
         if len(messages) > 0:
-            print(",".join(messages))
+            out = ",".join(messages)
+            with open(r'C:\Users\brand\Documents\School\Grad_School\Year6\lux_ai_kaggle\code\rl_agent\commands1.log', 'a') as f:
+                f.write(out + '\n')
+            print(out)
         else:
             # Print a new line. This is needed for the main_kaggle_submission.py wrapper to work
             print("")
