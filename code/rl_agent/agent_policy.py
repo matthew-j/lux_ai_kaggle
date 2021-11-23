@@ -113,7 +113,7 @@ class AgentPolicy(Agent):
         super().__init__()
         self.model = model
         self.mode = mode
-        
+        self.step_count = 0
         self.stats = None
         self.stats_last_game = None
 
@@ -521,6 +521,9 @@ class AgentPolicy(Agent):
             "rew/r_fuel_collected":0,
             "rew/r_units":0,
             "rew/r_city_tiles":0,
+            "rew/r_units_opponent":0,
+            "rew/r_city_tiles_opponent":0,
+            "rew/r_opponent_city_tiles_end":0,
             "game/turns": 0,
             "game/research": 0,
             "game/unit_count": 0,
@@ -530,6 +533,9 @@ class AgentPolicy(Agent):
             "game/wood_rate_mined": 0,
             "game/coal_rate_mined": 0,
             "game/uranium_rate_mined": 0,
+            "game/opponent_city_tiles": 0,
+            "game/opponent_unit_count": 0,
+            "game/opponent_city_count": 0,
         }
         self.is_last_turn = False
 
@@ -552,7 +558,20 @@ class AgentPolicy(Agent):
         self.research_last = 0
         self.units_last = 0
         self.city_tiles_last = 0
+        
+        self.units_last_opponent = 0
+        self.city_tiles_last_opponent = 0
 
+    def turn_reward_weight(self):
+        if self.step_count <= 90:
+            return 1.0
+        elif self.step_count <= 180:
+            return 1.2
+        elif self.step_count <= 270:
+            return 1.5
+        else:
+            return 1.2
+        
     def get_reward(self, game, is_game_finished, is_new_turn, is_game_error):
         """
         Returns the reward function for this step of the game.
@@ -597,8 +616,10 @@ class AgentPolicy(Agent):
         self.stats["game/city_count"] = city_count
         self.stats["game/unit_count"] = unit_count
         self.stats["game/cart_count"] = cart_count
+        self.stats["game/opponent_city_tiles"] = city_tile_count_opponent
+        self.stats["game/opponent_unit_count"] = unit_count_opponent
+        self.stats["game/opponent_city_count"] = city_count_opponent
         self.stats["game/turns"] = game.state["turn"]
-
         rewards = {}
 
         # Give up to 1.0 reward for each resource based on % of total mined.
@@ -610,7 +631,7 @@ class AgentPolicy(Agent):
         fuel_now = {}
         for type, type_upper in type_map.items():
             fuel_now = game.stats["teamStats"][self.team]["resourcesCollected"][type] * game.configs["parameters"]["RESOURCE_TO_FUEL_RATE"][type_upper]
-            rewards["rew/r_%s" % type] = (fuel_now - self.fuel_last[type]) / self.fuel_start[type]
+            rewards["rew/r_%s" % type] = (fuel_now - self.fuel_last[type]) / self.fuel_start[type] * self.turn_reward_weight()
             self.stats["game/%s_rate_mined" % type] = fuel_now / self.fuel_start[type]
             self.fuel_last[type] = fuel_now
         
@@ -625,11 +646,15 @@ class AgentPolicy(Agent):
 
         # Give a reward for unit creation/death. 0.05 reward per unit.
         rewards["rew/r_units"] = (unit_count - self.units_last) * 0.05
+        rewards["rew/r_units_opponent"] = (unit_count_opponent - self.units_last_opponent) * -0.01
         self.units_last = unit_count
+        self.units_last_opponent = unit_count_opponent
 
         # Give a reward for unit creation/death. 0.1 reward per city.
         rewards["rew/r_city_tiles"] = (city_tile_count - self.city_tiles_last) * 0.1
+        rewards["rew/r_city_tiles_opponent"] = (city_tile_count_opponent - self.city_tiles_last_opponent) * -0.01
         self.city_tiles_last = city_tile_count
+        self.city_tiles_last_opponent = city_tile_count_opponent
 
         # Tiny reward for research to help. Up to 0.5 reward for this.
         rewards["rew/r_research"] = (research - self.research_last) / (200 * 2)
@@ -637,9 +662,11 @@ class AgentPolicy(Agent):
         
         # Give a reward up to around 50.0 based on number of city tiles at the end of the game
         rewards["rew/r_city_tiles_end"] = 0
+        rewards["rew/r_opponent_city_tiles_end"] = 0
         if is_game_finished:
             self.is_last_turn = True
             rewards["rew/r_city_tiles_end"] = city_tile_count
+            rewards["rew/r_opponent_city_tiles_end"] = -0.2 * city_tile_count_opponent
         
         
         # Update the stats and total reward
@@ -656,8 +683,8 @@ class AgentPolicy(Agent):
                 stats_string.append("%s=%.2f" % (key, value))
             print(",".join(stats_string))
 
-
-        return reward
+        self.step_count += 1
+        return max(reward, 0)
         
     
 
