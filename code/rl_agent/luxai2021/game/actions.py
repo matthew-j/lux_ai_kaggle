@@ -1,7 +1,10 @@
 """
 Implements /src/Actions/index.ts
 """
-from .constants import Constants
+try:
+    from .constants import Constants
+except:
+    from rl_agent.luxai2021.game.constants import Constants
 
 UNIT_TYPES = Constants.UNIT_TYPES
 

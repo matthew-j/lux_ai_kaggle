@@ -3,10 +3,17 @@ import random
 from typing import List
 
 from argparse import Namespace
-from ..env.rng.rng import get_n_values
-from .cell import Cell
-from .constants import Constants
-from .position import Position
+
+try:
+    from ..env.rng.rng import get_n_values
+    from .cell import Cell
+    from .constants import Constants
+    from .position import Position
+except:
+    from rl_agent.luxai2021.env.rng.rng import get_n_values
+    from rl_agent.luxai2021.game.cell import Cell
+    from rl_agent.luxai2021.game.constants import Constants
+    from rl_agent.luxai2021.game.position import Position
 
 DIRECTIONS = Constants.DIRECTIONS
 RESOURCE_TYPES = Constants.RESOURCE_TYPES

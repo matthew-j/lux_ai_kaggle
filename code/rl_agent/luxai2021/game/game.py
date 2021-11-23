@@ -3,13 +3,20 @@ import random
 import sys
 import traceback
 
-from luxai2021.game.actions import MoveAction, PillageAction, SpawnCartAction, SpawnCityAction, SpawnWorkerAction, \
-    ResearchAction, TransferAction
-from .city import City
-from .constants import Constants, LuxMatchConfigs_Default
-from .game_map import GameMap
-from .unit import Worker, Cart
-
+try:
+    from luxai2021.game.actions import MoveAction, PillageAction, SpawnCartAction, SpawnCityAction, SpawnWorkerAction, \
+        ResearchAction, TransferAction
+    from .city import City
+    from .constants import Constants, LuxMatchConfigs_Default
+    from .game_map import GameMap
+    from .unit import Worker, Cart
+except:
+    from rl_agent.luxai2021.game.actions import MoveAction, PillageAction, SpawnCartAction, SpawnCityAction, SpawnWorkerAction, \
+        ResearchAction, TransferAction
+    from rl_agent.luxai2021.game.city import City
+    from rl_agent.luxai2021.game.constants import Constants, LuxMatchConfigs_Default
+    from rl_agent.luxai2021.game.game_map import GameMap
+    from rl_agent.luxai2021.game.unit import Worker, Cart
 INPUT_CONSTANTS = Constants.INPUT_CONSTANTS
 DIRECTIONS = Constants.DIRECTIONS
 
@@ -104,7 +111,7 @@ class Game:
         # Generate the map
         self.map = GameMap(self.configs)
         self.map.generate_map(self)
-
+        # self.updates = updates
         self.process_updates(updates)
 
     def process_updates(self, updates, assign=True):

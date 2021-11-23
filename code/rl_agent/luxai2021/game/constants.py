@@ -1,4 +1,7 @@
-from .game_constants import GAME_CONSTANTS
+try:
+    from .game_constants import GAME_CONSTANTS
+except:
+    from rl_agent.game.game_constants import GAME_CONSTANTS
 
 
 class Constants:

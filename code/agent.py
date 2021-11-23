@@ -15,14 +15,12 @@ from kaban.agent import agent as agent_kaban
 # log stuff: sys.stdout.write(<some string text here>)
 
 experts = [agent_imit, agent_wt, agent_kaban]
-expert_names = ['imitation_learning', 'working_title']
+expert_names = ['imitation_learning', 'working_title', 'kaban']
 max_reward = 500
 log = False
-DIRECTIONS = Constants.DIRECTIONS
-game_state = None
 
-algos = ["EXP3", "EXP3++", "EXP3Light"]
-algo = "EXP3Light" 
+algos = ["EXP3", "EXP3++", "EXP3Light", "EXP4"]
+algo = "EXP4" 
 params = {} # dict for parameters for online learning algo
 """Params:
 EXP3: gamma
@@ -34,6 +32,8 @@ assert algo in algos
 
 meta_bot = None
 rew = None
+DIRECTIONS = Constants.DIRECTIONS
+game_state = None
 
 def contains_nan(arr):
     return True if sum(np.isnan(arr)) > 0 else False
@@ -163,11 +163,11 @@ class EXP4(OnlineLearner):
         super().__init__(experts, algo, params)
 
     def initialize(self):
-        self.eta = 0.5 # np.sqrt(2*np.log(self.n_experts)/(360 * N_ARMS))
+        self.eta = 0.001 # np.sqrt(2*np.log(self.n_experts)/(360 * N_ARMS))
         self.gamma = 0
-        self.P = [1/self.n_experts] * self.n_experts
+        self.Q = [1/self.n_experts] * self.n_experts
     def run(self, observation):
-        i_chosen_expert = np.random.choice(self.n_experts, p=self.P)
+        i_chosen_expert = np.random.choice(self.n_experts, p=self.Q)
         self.played_arm = i_chosen_expert
 
         self.all_actions = []
@@ -178,8 +178,36 @@ class EXP4(OnlineLearner):
         return(self.all_actions[self.played_arm])
         
     def update(self, reward):
-        pass
+        """It is difficult to model the distribution across arms since the number of potential
+        actions increases very quickly. Therefore, we make certain assumptions in the update
+        computations.
+        
+        1) We treat each expert as picking a deterministic action at each time step. In other words,
+        if an agent is chosen, it plays the action that it picked with probability 1.
 
+        2) Since there are so many potential actions (multiple different choices for many different
+        units), it is statistically unlikely that two agents pick the exact same choices for all units.
+        Therefore, we assume the probability that an action is chosen is the same as the probability of
+        choosing the agent that chose that action. In other words, P[i] == Q[j] if agent j chose action i.
+        
+        3) Due to assumption 1, each row in the matrix E (which describes each agent and their probability 
+        distributions of action choices) has a single 1 and the rest of the values are 0. 
+
+        For the selected action/agent, X_hat is 1 - (1 - scaled_reward)/(Q[selected_agent] + gamma). For 
+        all other actions, the value is 1.
+
+        For X_squiggle, the element corresponding to the selected agent has value 
+        1 - (1 - scaled_reward)/(Q[selected_agent] + gamma) since we are assuming each agent picks
+        their action with probability 1. For non-selected agents, the value is 0. 
+        """
+        global max_reward
+
+        scaled_reward = reward/max_reward
+        X_squiggle = np.zeros(self.n_experts)
+        X_squiggle[self.played_arm] = 1 - (1 - scaled_reward)/(self.Q[self.played_arm] + self.gamma)
+
+        self.Q = np.exp(self.eta * X_squiggle) * self.Q
+        self.Q /= sum(self.Q)
 
 def agent(observation, configuration):
     global game_state
@@ -201,17 +229,12 @@ def agent(observation, configuration):
         rew = Reward(game=game_state, team=observation.player, max_reward=max_reward)
         rew.game_start()
 
-        if algo == "EXP3":
-            meta_bot = EXP3(experts, algo, params)          
-        elif algo == "EXP3PP":
-            meta_bot = EXP3PP(experts, algo, params)
-        elif algo == "EXP3Light":
-            meta_bot = EXP3Light(experts, algo, params)
-        else:
-            raise ValueError(f"Algorithm {algo} not recognized, expected something in {algos}")
+        meta_bot = globals()[algo](experts, algo, params) # create object from class specified by algo
 
         if log:
             os.remove('chosen_agent.log')
+            with open('chosen_agent.log', 'a') as f:
+                f.write(algo + '\n' + ','.join(expert_names) + '\n')
 
     else:
         game_state.process_updates(observation["updates"])

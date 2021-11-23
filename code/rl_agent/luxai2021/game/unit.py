@@ -3,10 +3,16 @@ Implements /src/Unit/index.ts -> Unit()
 """
 import math
 
-from .actionable import Actionable
-from .actions import *
-from .game_constants import GAME_CONSTANTS
-from .position import Position
+try:
+    from .actionable import Actionable
+    from .actions import *
+    from .game_constants import GAME_CONSTANTS
+    from .position import Position
+except:
+    from rl_agent.luxai2021.game.actionable import Actionable
+    from rl_agent.luxai2021.game.actions import *
+    from rl_agent.luxai2021.game.game_constants import GAME_CONSTANTS
+    from rl_agent.luxai2021.game.position import Position
 
 UNIT_TYPES = Constants.UNIT_TYPES
 
