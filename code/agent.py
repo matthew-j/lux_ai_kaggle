@@ -10,12 +10,14 @@ from rl_agent.luxai2021.game.constants import LuxMatchConfigs_Default
 from imitation_learning.agent import agent as agent_imit
 from working_title.agent import agent as agent_wt
 from kaban.agent import agent as agent_kaban
+from kaban.agent_dr import agent as agent_kaban_dr
+from kaban.agent_rl import agent as agent_kaban_rl
 
 
 # log stuff: sys.stdout.write(<some string text here>)
 
-experts = [agent_imit, agent_wt, agent_kaban]
-expert_names = ['imitation_learning', 'working_title', 'kaban']
+experts = [agent_imit, agent_wt, agent_kaban, agent_kaban_dr, agent_kaban_rl]
+expert_names = ['imitation_learning', 'working_title', 'kaban', 'kaban_durrett', 'kaban_rl_is_all_you_need']
 max_reward = 500
 log = False
 
@@ -26,6 +28,7 @@ params = {} # dict for parameters for online learning algo
 EXP3: gamma
 EXP3++: c
 EXP3Light: max_loss
+EXP4: gamma, eta (higher means less exploration)
 """
 
 assert algo in algos
@@ -163,7 +166,7 @@ class EXP4(OnlineLearner):
         super().__init__(experts, algo, params)
 
     def initialize(self):
-        self.eta = 0.001 # np.sqrt(2*np.log(self.n_experts)/(360 * N_ARMS))
+        self.eta = 0.01 # np.sqrt(2*np.log(self.n_experts)/(360 * N_ARMS))
         self.gamma = 0
         self.Q = [1/self.n_experts] * self.n_experts
     def run(self, observation):
