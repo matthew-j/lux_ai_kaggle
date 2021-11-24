@@ -9,9 +9,9 @@ except:
 
 path = '/kaggle_simulations/agent/kaban' if os.path.exists('/kaggle_simulations') else '.'
 try:
-    model = torch.jit.load(f'{path}/model.pth')
+    model = torch.jit.load(f'{path}/model_dr.pth')
 except:
-    model = torch.jit.load(f'kaban/model.pth')
+    model = torch.jit.load(f'kaban/model_dr.pth')
 model.eval()
 
 
@@ -126,7 +126,7 @@ def get_action(policy, unit, dest):
     return unit.move('c'), unit.pos
 
 
-def agent(observation, configuration, calc_actions=True):
+def agent_dr(observation, configuration, calc_actions=True):
     global game_state
     
     game_state = get_game_state(observation)    

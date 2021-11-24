@@ -9,12 +9,12 @@ from rl_agent.luxai2021.game.constants import LuxMatchConfigs_Default
 
 from imitation_learning.agent import agent as agent_imit
 from working_title.agent import agent as agent_wt
-from kaban.agent import agent as agent_kaban
+from kaban.agent_tb import agent_tb as agent_kaban_tb
 
 
 # log stuff: sys.stdout.write(<some string text here>)
 
-experts = [agent_imit, agent_wt, agent_kaban]
+experts = [agent_imit, agent_wt, agent_kaban_tb]
 expert_names = ['imitation_learning', 'working_title', 'kaban']
 max_reward = 500
 log = False
