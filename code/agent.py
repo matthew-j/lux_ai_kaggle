@@ -9,20 +9,27 @@ from rl_agent.luxai2021.game.constants import LuxMatchConfigs_Default
 
 from imitation_learning.agent import agent as agent_imit
 from working_title.agent import agent as agent_wt
-from kaban.agent import agent as agent_kaban
-from kaban.agent_dr import agent as agent_kaban_dr
-from kaban.agent_rl import agent as agent_kaban_rl
+
+from kaban.agent_tb import get_action
+from kaban.agent_tb import agent_tb as agent_kaban_tb
+from kaban.agent_dr import agent_dr as agent_kaban_dr
+from kaban.agent_rl import agent_rl as agent_kaban_rl
 
 
 # log stuff: sys.stdout.write(<some string text here>)
 
-experts = [agent_imit, agent_wt, agent_kaban, agent_kaban_dr, agent_kaban_rl]
-expert_names = ['imitation_learning', 'working_title', 'kaban', 'kaban_durrett', 'kaban_rl_is_all_you_need']
+# experts = [agent_imit, agent_wt, agent_kaban_tb, agent_kaban_dr, agent_kaban_rl]
+# expert_names = ['imitation_learning', 'working_title', 'imitation_toad_brigade', 'imitation_dr', 'imitation_rl']
+
+# for exp4stochastic
+experts = [agent_kaban_tb, agent_kaban_dr, agent_kaban_rl]
+expert_names = ['imitation_toad_brigade', 'imitation_dr', 'imitation_rl']
+
 max_reward = 500
 log = False
 
-algos = ["EXP3", "EXP3++", "EXP3Light", "EXP4"]
-algo = "EXP4" 
+algos = ["EXP3", "EXP3++", "EXP3Light", "EXP4", "EXP4Stochastic"]
+algo = "EXP4Stochastic" 
 params = {} # dict for parameters for online learning algo
 """Params:
 EXP3: gamma
@@ -210,6 +217,83 @@ class EXP4(OnlineLearner):
         X_squiggle[self.played_arm] = 1 - (1 - scaled_reward)/(self.Q[self.played_arm] + self.gamma)
 
         self.Q = np.exp(self.eta * X_squiggle) * self.Q
+        self.Q /= sum(self.Q)
+##
+##  Exp4 stochastic expects all experts to be from the Kaban folder
+##  Since each has the same logic for cities, only consider probabilities on units
+class EXP4Stochastic(OnlineLearner):
+    def __init__(self, experts, algo, params=None):
+        super().__init__(experts, algo, params)
+
+    def softmax(self, nums):
+        return (np.exp(nums) / sum(np.exp(nums))).tolist()
+
+    def initialize(self):
+        self.eta = 0.001 # np.sqrt(2*np.log(self.n_experts)/(360 * N_ARMS))
+        self.gamma = 0
+        self.Q = np.array([1/self.n_experts] * self.n_experts)
+
+    def run(self, observation):
+        self.unit_actions = {}
+        self.played_unit_actions = []
+        units = []
+        final_actions = []
+        
+        # Gather distributions from each expert for each unit
+        for i, exp in enumerate(self.experts):
+            units, probabilities, city_actions = exp(observation, None, calc_actions=True, stochastic_actions=True)
+            if i == 0:
+                units = units
+                final_actions.extend(city_actions)
+            for j, unit in enumerate(units):
+                if j not in self.unit_actions:
+                    self.unit_actions[j] = [self.softmax(probabilities[j])]
+                else:
+                    self.unit_actions[j].append(self.softmax(probabilities[j]))
+        
+        # Sample each distribution to get actions
+        for key, value in self.unit_actions.items():
+            expert_actions_dist = np.array(value).transpose()
+            action_dist = np.matmul(expert_actions_dist, self.Q.transpose()).tolist()
+            self.played_unit_actions.append(np.random.choice(np.arange(len(action_dist)), p=self.softmax(action_dist)))
+        
+        # Turn each action into command
+        dest = []
+        for i, unit in enumerate(units):
+            policy = [1] * 5
+            policy[self.played_unit_actions[i]] *= 100
+            action, pos = get_action(policy, unit, dest)
+            final_actions.append(action)
+            dest.append(pos)
+
+        return final_actions
+        
+    def update(self, reward):
+        self.eta = 0.001 # np.sqrt(2*np.log(self.n_experts)/(360 * N_ARMS))
+        self.gamma = 0
+        expert_probabilities = []
+        scaled_reward = reward / max_reward
+        pt_j = 0
+
+        # Get expert probabilities of choosing what happened
+        for i, exp in enumerate(self.experts):
+            prob = 1
+            j = 0
+            for key, value in self.unit_actions.items():
+                prob *= value[i][self.played_unit_actions[j]]
+                j += 1
+            expert_probabilities.append([prob, 1-prob])
+        
+        #calc pt_j
+        for i in range(len(expert_probabilities)):
+            pt_j += expert_probabilities[i][0] * self.Q[i]
+        
+        # estimate reward
+        reward_vec_np = 1 - np.array([(1 - scaled_reward) / (pt_j + self.gamma), 0])
+        expert_probabilities_np = np.array(expert_probabilities)
+        expert_rewards = np.matmul(expert_probabilities_np, reward_vec_np)
+        
+        self.Q = np.exp(self.eta * expert_rewards) * self.Q
         self.Q /= sum(self.Q)
 
 def agent(observation, configuration):
