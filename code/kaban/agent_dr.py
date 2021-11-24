@@ -126,7 +126,7 @@ def get_action(policy, unit, dest):
     return unit.move('c'), unit.pos
 
 
-def agent_dr(observation, configuration, calc_actions=True):
+def agent_dr(observation, configuration, calc_actions=True, stochastic_actions=False):
     global game_state
     
     game_state = get_game_state(observation)    
