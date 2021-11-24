@@ -1,6 +1,6 @@
 from typing import Dict
 import sys
-from agent import agent
+from agent_tb import agent_tb as agent
 if __name__ == "__main__":
     
     def read_input():
