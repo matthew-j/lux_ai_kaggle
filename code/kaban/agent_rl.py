@@ -134,17 +134,20 @@ def agent_rl(observation, configuration, calc_actions=True, stochastic_actions=F
         return(None)
     player = game_state.players[observation.player]
     actions = []
-    
+    city_actions = []
+    policies = []
+    units = []
+
     # City Actions
     unit_count = len(player.units)
     for city in player.cities.values():
         for city_tile in city.citytiles:
             if city_tile.can_act():
                 if unit_count < player.city_tile_count: 
-                    actions.append(city_tile.build_worker())
+                    city_actions.append(city_tile.build_worker())
                     unit_count += 1
                 elif not player.researched_uranium():
-                    actions.append(city_tile.research())
+                    city_actions.append(city_tile.research())
                     player.research_points += 1
     
     # Worker Actions
@@ -156,9 +159,16 @@ def agent_rl(observation, configuration, calc_actions=True, stochastic_actions=F
                 p = model(torch.from_numpy(state).unsqueeze(0))
 
             policy = p.squeeze(0).numpy()
+            if stochastic_actions:
+                policies.append(policy)
+                units.append(unit)
+            else:
+                action, pos = get_action(policy, unit, dest)
+                actions.append(action)
+                dest.append(pos)
 
-            action, pos = get_action(policy, unit, dest)
-            actions.append(action)
-            dest.append(pos)
-
-    return actions
+    if stochastic_actions:
+        return units, policies, city_actions
+    else:
+        actions.extend(city_actions)
+        return actions
