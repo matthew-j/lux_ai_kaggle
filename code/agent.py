@@ -21,15 +21,15 @@ from kaban.agent_rl import agent_rl as agent_kaban_rl
 # experts = [agent_imit, agent_wt, agent_kaban_tb, agent_kaban_dr, agent_kaban_rl]
 # expert_names = ['imitation_learning', 'working_title', 'imitation_toad_brigade', 'imitation_dr', 'imitation_rl']
 
-# for exp4stochastic
+# for exp4stochastic and nexp
 experts = [agent_kaban_tb, agent_kaban_dr, agent_kaban_rl]
 expert_names = ['imitation_toad_brigade', 'imitation_dr', 'imitation_rl']
 
 max_reward = 500
-log = False
+log = True
 
 algos = ["EXP3", "EXP3++", "EXP3Light", "EXP4", "EXP4Stochastic", "NEXP"]
-algo = "NEXP" 
+algo = "EXP4Stochastic" 
 params = {} # dict for parameters for online learning algo
 """Params:
 EXP3: gamma
@@ -39,6 +39,9 @@ EXP4: gamma, eta (higher means less exploration)
 """
 
 assert algo in algos
+if algo in ['EXP4Stochastic', 'NEXP']:
+    experts = [agent_kaban_tb, agent_kaban_dr, agent_kaban_rl]
+    expert_names = ['imitation_toad_brigade', 'imitation_dr', 'imitation_rl']
 
 meta_bot = None
 rew = None
@@ -135,7 +138,7 @@ class EXP3PP(OnlineLearner):
         return(actions)
     
     def update(self, reward):
-        loss = (reward - max_reward)/max_reward
+        loss = 1 - reward
         self.L[self.played_arm] += loss/self.P[self.played_arm]
         assert not contains_nan(self.L)
         self.t += 1
@@ -161,8 +164,7 @@ class EXP3Light(OnlineLearner):
         actions = self.sample_and_play(observation)
         return(actions)
     def update(self, reward):
-        global max_reward
-        loss = max_reward - reward
+        loss = 1 - reward
         self.L_squiggle[self.played_arm] += loss/self.P[self.played_arm]
         min_L_squiggle = min(self.L_squiggle)
         if min_L_squiggle/self.max_loss > 4 ** self.r:
@@ -210,11 +212,9 @@ class EXP4(OnlineLearner):
         1 - (1 - scaled_reward)/(Q[selected_agent] + gamma) since we are assuming each agent picks
         their action with probability 1. For non-selected agents, the value is 0. 
         """
-        global max_reward
 
-        scaled_reward = reward/max_reward
         X_squiggle = np.zeros(self.n_experts)
-        X_squiggle[self.played_arm] = 1 - (1 - scaled_reward)/(self.Q[self.played_arm] + self.gamma)
+        X_squiggle[self.played_arm] = 1 - (1 - reward)/(self.Q[self.played_arm] + self.gamma)
 
         self.Q = np.exp(self.eta * X_squiggle) * self.Q
         self.Q /= sum(self.Q)
@@ -272,7 +272,6 @@ class EXP4Stochastic(OnlineLearner):
         self.eta = 0.001 # np.sqrt(2*np.log(self.n_experts)/(360 * N_ARMS))
         self.gamma = 0
         expert_probabilities = []
-        scaled_reward = reward / max_reward
         pt_j = 0
 
         # Get expert probabilities of choosing what happened
@@ -289,7 +288,7 @@ class EXP4Stochastic(OnlineLearner):
             pt_j += expert_probabilities[i][0] * self.Q[i]
         
         # estimate reward
-        reward_vec_np = 1 - np.array([(1 - scaled_reward) / (pt_j + self.gamma), 0])
+        reward_vec_np = 1 - np.array([(1 - reward) / (pt_j + self.gamma), 0])
         expert_probabilities_np = np.array(expert_probabilities)
         expert_rewards = np.matmul(expert_probabilities_np, reward_vec_np)
         
@@ -375,7 +374,6 @@ class NEXP(OnlineLearner):
     def update(self, reward):
         self.gamma = 0
         expert_probabilities = []
-        scaled_reward = reward / max_reward
         pt_j = 0
 
         # Get expert probabilities of choosing what happened
@@ -387,7 +385,7 @@ class NEXP(OnlineLearner):
                 j += 1
             expert_probabilities.append(prob)
 
-        reward_vec = [scaled_reward * expert_probabilities[i] / self.p_a for i in range(len(self.experts))]
+        reward_vec = [reward * expert_probabilities[i] / self.p_a for i in range(len(self.experts))]
         self.Q = np.array([self.Q[i] * np.exp(self.alpha * reward_vec[i]) for i in range(len(self.experts))])
         self.Q /= sum(self.Q)
 
