@@ -26,10 +26,11 @@ experts = [agent_kaban_tb, agent_kaban_dr, agent_kaban_rl]
 expert_names = ['imitation_toad_brigade', 'imitation_dr', 'imitation_rl']
 
 max_reward = 500
-log = True
+
+log = False if os.path.exists('/kaggle_simulations') else True
 
 algos = ["EXP3", "EXP3++", "EXP3Light", "EXP4", "EXP4Stochastic", "NEXP"]
-algo = "EXP4Stochastic" 
+algo = "NEXP" 
 params = {} # dict for parameters for online learning algo
 """Params:
 EXP3: gamma
