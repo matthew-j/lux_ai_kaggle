@@ -17,12 +17,9 @@ from kaban.agent_rl import agent_rl as agent_kaban_rl
 
 # log stuff: sys.stdout.write(<some string text here>)
 
-# experts = [agent_wt, agent_kaban_tb, agent_kaban_dr, agent_kaban_rl]
-# expert_names = ['working_title', 'imitation_toad_brigade', 'imitation_dr', 'imitation_rl']
-
-# for exp4stochastic and nexp
-experts = [agent_kaban_tb, agent_kaban_dr, agent_kaban_rl]
-expert_names = ['imitation_toad_brigade', 'imitation_dr', 'imitation_rl']
+# if using exp4stochastic and nexp, code automatically keeps only the kaban agents
+experts = [agent_wt, agent_kaban_tb, agent_kaban_dr, agent_kaban_rl]
+expert_names = ['working_title', 'imitation_toad_brigade', 'imitation_dr', 'imitation_rl']
 
 max_reward = 500
 
