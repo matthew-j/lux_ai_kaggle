@@ -7,7 +7,6 @@ from rl_agent.luxai2021.game.game import Game
 from rl_agent.luxai2021.game.constants import Constants
 from rl_agent.luxai2021.game.constants import LuxMatchConfigs_Default
 
-from imitation_learning.agent import agent as agent_imit
 from working_title.agent import agent as agent_wt
 
 from kaban.agent_tb import get_action
@@ -18,8 +17,8 @@ from kaban.agent_rl import agent_rl as agent_kaban_rl
 
 # log stuff: sys.stdout.write(<some string text here>)
 
-# experts = [agent_imit, agent_wt, agent_kaban_tb, agent_kaban_dr, agent_kaban_rl]
-# expert_names = ['imitation_learning', 'working_title', 'imitation_toad_brigade', 'imitation_dr', 'imitation_rl']
+# experts = [agent_wt, agent_kaban_tb, agent_kaban_dr, agent_kaban_rl]
+# expert_names = ['working_title', 'imitation_toad_brigade', 'imitation_dr', 'imitation_rl']
 
 # for exp4stochastic and nexp
 experts = [agent_kaban_tb, agent_kaban_dr, agent_kaban_rl]
@@ -53,13 +52,12 @@ def contains_nan(arr):
     return True if sum(np.isnan(arr)) > 0 else False
 
 class OnlineLearner():
-    def __init__(self, experts, algo, params=None):
+    def __init__(self, experts, params=None):
         self.experts = experts
         self.n_experts = len(experts)
         self.rewards = []
         self.total_rewards = []
         self.played_arm = -1
-        self.algo = algo
         self.params = params
         self.initialize()
 
@@ -79,22 +77,15 @@ class OnlineLearner():
         return(actions)
 
 class EXP3(OnlineLearner):
-    def __init__(self, experts, algo, params=None):
-        super().__init__(experts, algo, params)
+    def __init__(self, experts, params=None):
+        super().__init__(experts, params)
     def initialize(self):
-        if self.algo == "EXP3":
-            self.L = np.zeros(self.n_experts)
-            try:
-                self.gamma = self.params['gamma']
-            except:
-                self.gamma = np.sqrt(np.log(self.n_experts)/(self.n_experts * 360))
-        elif self.algo == "EXP3++":
-            self.L = np.zeros(self.n_experts)
-            self.t = 1
-            try: # used in computing xi
-                self.c = self.params['c']
-            except:
-                self.c = 18
+        self.L = np.zeros(self.n_experts)
+        try:
+            self.gamma = self.params['gamma']
+        except:
+            self.gamma = np.sqrt(np.log(self.n_experts)/(self.n_experts * 360))
+
     def run(self, observation):
         self.P = np.exp(self.gamma * self.L)/sum(np.exp(self.gamma * self.L))
         actions = self.sample_and_play(observation)
@@ -104,9 +95,8 @@ class EXP3(OnlineLearner):
         self.L = np.array([(L_i + 1 - (1-reward)/self.P[arm]) if arm == self.played_arm else (L_i + 1) for arm, L_i in enumerate(self.L)])
     
 class EXP3PP(OnlineLearner):
-    def __init__(self, experts, algo, params=None):
-        super().__init__(experts, algo, params)
-
+    def __init__(self, experts, params=None):
+        super().__init__(experts, params)
 
     def initialize(self):
         self.L = np.zeros(self.n_experts)
@@ -145,8 +135,8 @@ class EXP3PP(OnlineLearner):
         self.t += 1
 
 class EXP3Light(OnlineLearner):
-    def __init__(self, experts, algo, params=None):
-        super().__init__(experts, algo, params)
+    def __init__(self, experts, params=None):
+        super().__init__(experts, params)
 
     def initialize(self):
         global max_reward
@@ -172,8 +162,8 @@ class EXP3Light(OnlineLearner):
             self.r = np.ceil(np.log(min_L_squiggle/self.max_loss)/np.log(4)) # log_4(.)
 
 class EXP4(OnlineLearner):
-    def __init__(self, experts, algo, params=None):
-        super().__init__(experts, algo, params)
+    def __init__(self, experts, params=None):
+        super().__init__(experts, params)
 
     def initialize(self):
         self.eta = 0.01 # np.sqrt(2*np.log(self.n_experts)/(360 * N_ARMS))
@@ -223,8 +213,8 @@ class EXP4(OnlineLearner):
 ##  Exp4 stochastic expects all experts to be from the Kaban folder
 ##  Since each has the same logic for cities, only consider probabilities on units
 class EXP4Stochastic(OnlineLearner):
-    def __init__(self, experts, algo, params=None):
-        super().__init__(experts, algo, params)
+    def __init__(self, experts, params=None):
+        super().__init__(experts, params)
 
     def softmax(self, nums):
         return (np.exp(nums) / sum(np.exp(nums))).tolist()
@@ -299,8 +289,8 @@ class EXP4Stochastic(OnlineLearner):
 ##  NEXP stochastic expects all experts to be from the Kaban folder
 ##  Since each has the same logic for cities, only consider probabilities on units
 class NEXP(OnlineLearner):
-    def __init__(self, experts, algo, params=None):
-        super().__init__(experts, algo, params)
+    def __init__(self, experts, params=None):
+        super().__init__(experts, params)
         self.alpha = .1
         self.c_threshold = 0.1
 
@@ -410,7 +400,7 @@ def agent(observation, configuration):
         rew = Reward(game=game_state, team=observation.player, max_reward=max_reward)
         rew.game_start()
 
-        meta_bot = globals()[algo](experts, algo, params) # create object from class specified by algo
+        meta_bot = globals()[algo](experts, params) # create object from class specified by algo
 
         if log:
             os.remove('chosen_agent.log')
