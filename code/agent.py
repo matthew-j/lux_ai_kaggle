@@ -23,8 +23,8 @@ expert_names = ['working_title', 'imitation_toad_brigade', 'imitation_dr', 'imit
 
 log = False if os.path.exists('/kaggle_simulations') else True
 
-algos = ["EXP3", "EXP3++", "EXP3Light", "EXP4", "EXP4Stochastic", "NEXP"]
-algo = "EXP4Stochastic" 
+algos = ["EXP3", "EXP3PP", "EXP3Light", "EXP4", "EXP4Stochastic", "NEXP"]
+algo = "EXP3PP"
 params = {} # dict for parameters for online learning algo
 """Params:
 EXP3: gamma
