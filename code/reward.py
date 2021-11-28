@@ -121,7 +121,7 @@ class Reward():
 
         # Calc max reward
         # Max reward of 12.5 + 0.06 * #cities + 0.1*#units at this point
-        self.max_reward = 12.5 + 0.06 * self.city_tiles_last + 0.1 * self.units_last + 0.2 * (self.city_tiles_last + self.units_last)
+        self.max_reward = 12.5 + 0.06 * self.city_tiles_last + 0.1 * self.units_last
 
         # Max reward of 3 from this
         for type, type_upper in type_map.items():
@@ -162,10 +162,6 @@ class Reward():
         # Can create at most 1 per unit. Max reward for this is 0.1 * # units
         # Max reward of 12 + 0.06 * #cities + 0.1*#units at this point
         rewards["rew/r_city_tiles"] = (city_tile_count - self.city_tiles_last) * 0.1
-
-        # Give a reward for total number of cities to incentivize maintaining cities. 
-        # Max reward = 0.2 * (city_tiles_last + unit_count) -> maintain all old cities, each unit builds a new city
-        rewards["rew/r_city_tiles_end"] = city_tile_count * 0.2
         self.city_tiles_last = city_tile_count
 
         # Update the stats and total reward
