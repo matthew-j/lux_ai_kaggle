@@ -3,9 +3,8 @@ import random
 
 from rl_agent.luxai2021.game.constants import Constants
 
-
 class Reward():
-    def __init__(self, game, team, max_reward) -> None:
+    def __init__(self, game, team) -> None:
         super().__init__()
         
         self.stats = None
@@ -13,7 +12,7 @@ class Reward():
 
         self.game = game
         self.team = team
-        self.max_reward = max_reward
+        self.max_reward = 100
     def game_start(self):
         """
         This funciton is called at the start of each game. Use this to
@@ -47,6 +46,7 @@ class Reward():
             "game/wood_rate_mined": 0,
             "game/coal_rate_mined": 0,
             "game/uranium_rate_mined": 0,
+            "rew/r_carts": 0,
         }
         self.is_last_turn = False
 
@@ -69,6 +69,7 @@ class Reward():
         self.research_last = 0
         self.units_last = 0
         self.city_tiles_last = 0
+        self.carts_last = 0
 
     def get_reward(self):
         """
@@ -117,6 +118,12 @@ class Reward():
             Constants.RESOURCE_TYPES.URANIUM: "URANIUM",
         }
         fuel_now = {}
+
+        # Calc max reward
+        # Max reward of 12.5 + 0.06 * #cities + 0.1*#units at this point
+        self.max_reward = 12.5 + 0.06 * self.city_tiles_last + 0.1 * self.units_last + 0.2 * (self.city_tiles_last + self.units_last)
+
+        # Max reward of 3 from this
         for type, type_upper in type_map.items():
             fuel_now = self.game.stats["teamStats"][self.team]["resourcesCollected"][type] * self.game.configs["parameters"]["RESOURCE_TO_FUEL_RATE"][type_upper]
             rewards["rew/r_%s" % type] = (fuel_now - self.fuel_last[type]) / self.fuel_start[type]
@@ -124,30 +131,43 @@ class Reward():
             self.fuel_last[type] = fuel_now
         
         # Give more incentive for coal and uranium
+        # Max reward of 1 + 2 + 4  = 7 at this point
         rewards["rew/r_%s" % Constants.RESOURCE_TYPES.COAL] *= 2
         rewards["rew/r_%s" % Constants.RESOURCE_TYPES.URANIUM] *= 4
         
         # Give a reward based on amount of fuel collected. 1.0 reward for each 20K fuel gathered.
+        # Lets assume that we will not collect more than 100k of fuel per turn. So max pts for this turn is 5.
+        # Max reward of 7 + 5 = 12 at this point. 
         fuel_collected = self.game.stats["teamStats"][self.team]["fuelGenerated"]
         rewards["rew/r_fuel_collected"] = ( (fuel_collected - self.fuel_collected_last) / 20000 )
         self.fuel_collected_last = fuel_collected
 
         # Give a reward for unit creation/death. 0.05 reward per unit.
+        # Can create at most 1 unit per city. Max reward for this is 0.05 * # cities
+        # Max reward of 12 + 0.05 * #cities at this point
         rewards["rew/r_units"] = (unit_count - self.units_last) * 0.05
         self.units_last = unit_count
 
-        # Give a reward for unit creation/death. 0.1 reward per city.
-        rewards["rew/r_city_tiles"] = (city_tile_count - self.city_tiles_last) * 0.1
-        self.city_tiles_last = city_tile_count
+        # Give a reward for cart creation/death. 0.01 reward per cart
+        # Can create at most 1 cart per city. Max reward for this is 0.01 * # cities
+        # Max reward of 12 + 0.06 * #cities at this point
+        rewards["rew/r_carts"] = (cart_count - self.carts_last) * 0.01
 
         # Tiny reward for research to help. Up to 0.5 reward for this.
+        # Max reward of 12.5 + 0.06 * #cities + 0.1*#units at this point
         rewards["rew/r_research"] = (research - self.research_last) / (200 * 2)
         self.research_last = research
-        
-        # Give a reward up to around 50.0 based on number of city tiles at the end of the game
-        rewards["rew/r_city_tiles_end"] = city_tile_count
-        
-        
+
+        # Give a reward for unit creation/death. 0.1 reward per city.
+        # Can create at most 1 per unit. Max reward for this is 0.1 * # units
+        # Max reward of 12 + 0.06 * #cities + 0.1*#units at this point
+        rewards["rew/r_city_tiles"] = (city_tile_count - self.city_tiles_last) * 0.1
+
+        # Give a reward for total number of cities to incentivize maintaining cities. 
+        # Max reward = 0.2 * (city_tiles_last + unit_count) -> maintain all old cities, each unit builds a new city
+        rewards["rew/r_city_tiles_end"] = city_tile_count * 0.2
+        self.city_tiles_last = city_tile_count
+
         # Update the stats and total reward
         reward = 0
         for name, value in rewards.items():
@@ -164,4 +184,4 @@ class Reward():
 
         assert reward <= self.max_reward
         scaled_reward = reward/self.max_reward
-        return scaled_reward
+        return scaled_reward, self.max_reward

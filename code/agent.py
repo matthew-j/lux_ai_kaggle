@@ -21,12 +21,10 @@ from kaban.agent_rl import agent_rl as agent_kaban_rl
 experts = [agent_wt, agent_kaban_tb, agent_kaban_dr, agent_kaban_rl]
 expert_names = ['working_title', 'imitation_toad_brigade', 'imitation_dr', 'imitation_rl']
 
-max_reward = 500
-
 log = False if os.path.exists('/kaggle_simulations') else True
 
 algos = ["EXP3", "EXP3++", "EXP3Light", "EXP4", "EXP4Stochastic", "NEXP"]
-algo = "NEXP" 
+algo = "EXP4" 
 params = {} # dict for parameters for online learning algo
 """Params:
 EXP3: gamma
@@ -136,11 +134,10 @@ class EXP3Light(OnlineLearner):
         super().__init__(experts, params)
 
     def initialize(self):
-        global max_reward
         try:
             self.max_loss = self.params['max_loss']
         except:
-            self.max_loss = max_reward
+            self.max_loss = 1
         self.r = 0
         self.L_squiggle = np.zeros(self.n_experts)
     
@@ -243,7 +240,9 @@ class EXP4Stochastic(OnlineLearner):
         for key, value in self.unit_actions.items():
             expert_actions_dist = np.array(value).transpose()
             action_dist = np.matmul(expert_actions_dist, self.Q.transpose()).tolist()
-            self.played_unit_actions.append(np.random.choice(np.arange(len(action_dist)), p=self.softmax(action_dist)))
+            # Divide by sum to ensure probability distribution actually sums to 1
+            action_dist /= sum(action_dist)
+            self.played_unit_actions.append(np.random.choice(np.arange(len(action_dist)), p=action_dist))
         
         # Turn each action into command
         dest = []
@@ -345,6 +344,8 @@ class NEXP(OnlineLearner):
 
             pmin = [self.alpha * max(expert_actions_dist.tolist()[i]) for i in range(5)]
             p_final = self.LP_Mix_Solve(action_dist, pmin)
+            # Scale to ensure that it sums to 1
+            p_final /= sum(p_final)
             self.played_unit_actions.append(np.random.choice(np.arange(len(action_dist)), p=p_final))
             self.p_a *= p_final[self.played_unit_actions[-1]] 
 
@@ -383,7 +384,6 @@ def agent(observation, configuration):
     global meta_bot
     global rew
     global params
-    global max_reward
     global expert_names
     global log
     configuration = None
@@ -394,7 +394,7 @@ def agent(observation, configuration):
         config['width'] = int(observation["updates"][1].split()[1])
         game_state = Game(config)
         game_state.reset(observation["updates"][2:]) # .reset() calls .process_updates()
-        rew = Reward(game=game_state, team=observation.player, max_reward=max_reward)
+        rew = Reward(game=game_state, team=observation.player)
         rew.game_start()
 
         meta_bot = globals()[algo](experts, params) # create object from class specified by algo
@@ -406,7 +406,7 @@ def agent(observation, configuration):
 
     else:
         game_state.process_updates(observation["updates"])
-        reward = rew.get_reward()
+        reward, max_reward = rew.get_reward()
         meta_bot.update(reward)
 
         if log:
