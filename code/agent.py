@@ -24,7 +24,7 @@ expert_names = ['working_title', 'imitation_toad_brigade', 'imitation_dr', 'imit
 log = False if os.path.exists('/kaggle_simulations') else True
 
 algos = ["EXP3", "EXP3++", "EXP3Light", "EXP4", "EXP4Stochastic", "NEXP"]
-algo = "EXP4" 
+algo = "EXP4Stochastic" 
 params = {} # dict for parameters for online learning algo
 """Params:
 EXP3: gamma
@@ -241,7 +241,8 @@ class EXP4Stochastic(OnlineLearner):
             expert_actions_dist = np.array(value).transpose()
             action_dist = np.matmul(expert_actions_dist, self.Q.transpose()).tolist()
             # Divide by sum to ensure probability distribution actually sums to 1
-            action_dist /= sum(action_dist)
+            cur_sum = sum(action_dist)
+            action_dist = [x / cur_sum for x in action_dist]
             self.played_unit_actions.append(np.random.choice(np.arange(len(action_dist)), p=action_dist))
         
         # Turn each action into command
@@ -345,7 +346,8 @@ class NEXP(OnlineLearner):
             pmin = [self.alpha * max(expert_actions_dist.tolist()[i]) for i in range(5)]
             p_final = self.LP_Mix_Solve(action_dist, pmin)
             # Scale to ensure that it sums to 1
-            p_final /= sum(p_final)
+            cur_sum = sum(p_final)
+            p_final = [x / cur_sum for x in p_final]
             self.played_unit_actions.append(np.random.choice(np.arange(len(action_dist)), p=p_final))
             self.p_a *= p_final[self.played_unit_actions[-1]] 
 
