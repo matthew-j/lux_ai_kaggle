@@ -36,7 +36,7 @@ EXP4: gamma, eta (higher means less exploration)
 assert algo in algos
 if algo in ['EXP4Stochastic', 'NEXP']:
     experts = [agent_kaban_tb, agent_kaban_dr, agent_kaban_rl]
-    expert_names = ['imitation_toad_brigade', 'imitation_dr', 'imitation_rl']
+    expert_names = ['imitation_tb', 'imitation_dr', 'imitation_rl']
 
 meta_bot = None
 rew = None
