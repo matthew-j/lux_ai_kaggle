@@ -172,11 +172,11 @@ class Reward():
         self.stats["rew/r_total"] += reward
 
         # Print the final game stats sometimes
-        if random.random() <= 0.15:
-            stats_string = []
-            for key, value in self.stats.items():
-                stats_string.append("%s=%.2f" % (key, value))
-            print(",".join(stats_string))
+        # if random.random() <= 0.15:
+        #     stats_string = []
+        #     for key, value in self.stats.items():
+        #         stats_string.append("%s=%.2f" % (key, value))
+        #     print(",".join(stats_string))
 
         assert reward <= self.max_reward
         scaled_reward = reward/self.max_reward
