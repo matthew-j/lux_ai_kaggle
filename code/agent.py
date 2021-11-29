@@ -19,7 +19,7 @@ from kaban.agent_rl import agent_rl as agent_kaban_rl
 
 # if using exp4stochastic and nexp, code automatically keeps only the kaban agents
 experts = [agent_wt, agent_kaban_tb, agent_kaban_dr, agent_kaban_rl]
-expert_names = ['working_title', 'imitation_toad_brigade', 'imitation_dr', 'imitation_rl']
+expert_names = ['working_title', 'imitation_tb', 'imitation_dr', 'imitation_rl']
 
 log = False if os.path.exists('/kaggle_simulations') else True
 
