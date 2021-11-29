@@ -24,7 +24,7 @@ expert_names = ['working_title', 'imitation_tb', 'imitation_dr', 'imitation_rl']
 log = False if os.path.exists('/kaggle_simulations') else True
 
 algos = ["EXP3", "EXP3PP", "EXP3Light", "EXP4", "EXP4Stochastic", "NEXP"]
-algo = "EXP3PP"
+algo = "NEXP"
 params = {} # dict for parameters for online learning algo
 """Params:
 EXP3: gamma
@@ -254,6 +254,10 @@ class EXP4Stochastic(OnlineLearner):
             final_actions.append(action)
             dest.append(pos)
 
+        # for logging purposes only: EXP4Stoch doesn't actually "choose" an expert
+        # report expert with highest probability as the arm that is "played"
+        self.played_arm = np.argmax(self.Q)
+
         return final_actions
         
     def update(self, reward):
@@ -359,6 +363,10 @@ class NEXP(OnlineLearner):
             action, pos = get_action(policy, unit, dest)
             final_actions.append(action)
             dest.append(pos)
+
+        # for logging purposes only: NEXP doesn't actually "choose" an expert
+        
+        self.played_arm = np.argmax(self.Q)
 
         return final_actions
 
