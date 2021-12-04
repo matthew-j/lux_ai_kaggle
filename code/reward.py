@@ -1,3 +1,5 @@
+"""Code adapted from https://www.kaggle.com/glmcdona/reinforcement-learning-openai-ppo-with-python-game/notebook"""
+
 import copy
 import random
 

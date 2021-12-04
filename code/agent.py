@@ -18,13 +18,17 @@ from kaban.agent_rl import agent_rl as agent_kaban_rl
 # log stuff: sys.stdout.write(<some string text here>)
 
 # if using exp4stochastic and nexp, code automatically keeps only the kaban agents
-experts = [agent_wt, agent_kaban_tb, agent_kaban_dr, agent_kaban_rl]
-expert_names = ['working_title', 'imitation_tb', 'imitation_dr', 'imitation_rl']
+# experts = [agent_wt, agent_kaban_tb, agent_kaban_dr, agent_kaban_rl]
+# expert_names = ['working_title', 'imitation_tb', 'imitation_dr', 'imitation_rl']
+
+experts = [agent_kaban_tb, agent_kaban_dr]
+expert_names = [ 'imitation_tb', 'imitation_dr']
+
 
 log = False if os.path.exists('/kaggle_simulations') else True
 
 algos = ["EXP3", "EXP3PP", "EXP3Light", "EXP4", "EXP4Stochastic", "NEXP"]
-algo = "NEXP"
+algo = "EXP4"
 params = {} # dict for parameters for online learning algo
 """Params:
 EXP3: gamma
@@ -34,16 +38,18 @@ EXP4: gamma, eta (higher means less exploration)
 """
 
 assert algo in algos
-if algo in ['EXP4Stochastic', 'NEXP']:
-    experts = [agent_kaban_tb, agent_kaban_dr, agent_kaban_rl]
-    expert_names = ['imitation_tb', 'imitation_dr', 'imitation_rl']
+# if algo in ['EXP4Stochastic', 'NEXP']:
+#     experts = [agent_kaban_tb, agent_kaban_dr, agent_kaban_rl]
+#     expert_names = ['imitation_tb', 'imitation_dr', 'imitation_rl']
 
+# Setting global variables
 meta_bot = None
 rew = None
 DIRECTIONS = Constants.DIRECTIONS
 game_state = None
 
 def contains_nan(arr):
+    """Determine if an array has nans"""
     return True if sum(np.isnan(arr)) > 0 else False
 
 class OnlineLearner():
@@ -57,6 +63,9 @@ class OnlineLearner():
         self.initialize()
 
     def sample_and_play(self, observation):
+        """Takes self.P as the probability distribution for experts. Automatically samples from self.P and chooses an
+        expert, plays that expert, and returns the actions recommended by the expert"""
+
         # choose expert to play
         i_chosen_expert = np.random.choice(self.n_experts, p=self.P)
         self.played_arm = i_chosen_expert
@@ -72,6 +81,7 @@ class OnlineLearner():
         return(actions)
 
 class EXP3(OnlineLearner):
+    """Plays EXP3 algorithm, treating agents as arms."""
     def __init__(self, experts, params=None):
         super().__init__(experts, params)
     def initialize(self):
@@ -90,6 +100,7 @@ class EXP3(OnlineLearner):
         self.L = np.array([(L_i + 1 - (1-reward)/self.P[arm]) if arm == self.played_arm else (L_i + 1) for arm, L_i in enumerate(self.L)])
     
 class EXP3PP(OnlineLearner):
+    """Plays EXP3++ algorithm, treating agents as arms."""
     def __init__(self, experts, params=None):
         super().__init__(experts, params)
 
@@ -130,6 +141,7 @@ class EXP3PP(OnlineLearner):
         self.t += 1
 
 class EXP3Light(OnlineLearner):
+    """Plays EXP3Light algorithm with agents as arms."""
     def __init__(self, experts, params=None):
         super().__init__(experts, params)
 
@@ -156,6 +168,7 @@ class EXP3Light(OnlineLearner):
             self.r = np.ceil(np.log(min_L_squiggle/self.max_loss)/np.log(4)) # log_4(.)
 
 class EXP4(OnlineLearner):
+    """Plays EXP4 with agents as experts. Treats expert actions as deterministic, i.e. the recommended action is played definitely."""
     def __init__(self, experts, params=None):
         super().__init__(experts, params)
 
@@ -175,29 +188,6 @@ class EXP4(OnlineLearner):
         return(self.all_actions[self.played_arm])
         
     def update(self, reward):
-        """It is difficult to model the distribution across arms since the number of potential
-        actions increases very quickly. Therefore, we make certain assumptions in the update
-        computations.
-        
-        1) We treat each expert as picking a deterministic action at each time step. In other words,
-        if an agent is chosen, it plays the action that it picked with probability 1.
-
-        2) Since there are so many potential actions (multiple different choices for many different
-        units), it is statistically unlikely that two agents pick the exact same choices for all units.
-        Therefore, we assume the probability that an action is chosen is the same as the probability of
-        choosing the agent that chose that action. In other words, P[i] == Q[j] if agent j chose action i.
-        
-        3) Due to assumption 1, each row in the matrix E (which describes each agent and their probability 
-        distributions of action choices) has a single 1 and the rest of the values are 0. 
-
-        For the selected action/agent, X_hat is 1 - (1 - scaled_reward)/(Q[selected_agent] + gamma). For 
-        all other actions, the value is 1.
-
-        For X_squiggle, the element corresponding to the selected agent has value 
-        1 - (1 - scaled_reward)/(Q[selected_agent] + gamma) since we are assuming each agent picks
-        their action with probability 1. For non-selected agents, the value is 0. 
-        """
-
         X_squiggle = np.zeros(self.n_experts)
         X_squiggle[self.played_arm] = 1 - (1 - reward)/(self.Q[self.played_arm] + self.gamma)
 
@@ -207,6 +197,8 @@ class EXP4(OnlineLearner):
 ##  Exp4 stochastic expects all experts to be from the Kaban folder
 ##  Since each has the same logic for cities, only consider probabilities on units
 class EXP4Stochastic(OnlineLearner):
+    """Plays EXP4 with agents as experts. Treats expert actions as a probability distribution over actions and the action that
+    is played is sampled from that distribution."""
     def __init__(self, experts, params=None):
         super().__init__(experts, params)
 
@@ -290,6 +282,7 @@ class EXP4Stochastic(OnlineLearner):
 ##  NEXP stochastic expects all experts to be from the Kaban folder
 ##  Since each has the same logic for cities, only consider probabilities on units
 class NEXP(OnlineLearner):
+    """Plays the NEXP algorithm with agents as experts"""
     def __init__(self, experts, params=None):
         super().__init__(experts, params)
         self.alpha = .1
@@ -389,6 +382,8 @@ class NEXP(OnlineLearner):
         self.Q /= sum(self.Q)
 
 def agent(observation, configuration):
+    """The function that is played by the Kaggle game simulation. Takes an observation (game state) and configuration (not used)
+    as inputs and outputs the actions for that game step."""
     global game_state
     global algo
     global meta_bot
@@ -423,8 +418,6 @@ def agent(observation, configuration):
             with open('chosen_agent.log', 'a') as f:
                 f.write(expert_names[meta_bot.played_arm] + ',' + str(reward*max_reward) + ',' + str(reward) + '\n')
 
-    ### AI Code goes down here! ### 
-    # player = observation.player    
     actions = meta_bot.run(observation)
 
     return actions
